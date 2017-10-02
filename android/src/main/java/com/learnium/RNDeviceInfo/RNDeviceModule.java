@@ -1,5 +1,6 @@
 package com.learnium.RNDeviceInfo;
 
+import android.Manifest;
 import android.app.KeyguardManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -8,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.provider.Settings.Secure;
+import android.webkit.WebSettings;
+import android.telephony.TelephonyManager;
 
 import com.google.android.gms.iid.InstanceID;
 
@@ -94,6 +97,8 @@ public class RNDeviceModule extends ReactContextBaseJavaModule {
       PackageInfo info = packageManager.getPackageInfo(packageName, 0);
       constants.put("appVersion", info.versionName);
       constants.put("buildNumber", info.versionCode);
+      constants.put("firstInstallTime", info.firstInstallTime);
+      constants.put("lastUpdateTime", info.lastUpdateTime);
     } catch (PackageManager.NameNotFoundException e) {
       e.printStackTrace();
     }
@@ -116,15 +121,24 @@ public class RNDeviceModule extends ReactContextBaseJavaModule {
     constants.put("model", Build.MODEL);
     constants.put("brand", Build.BRAND);
     constants.put("deviceId", Build.BOARD);
+    constants.put("apiLevel", Build.VERSION.SDK_INT);
     constants.put("deviceLocale", this.getCurrentLanguage());
     constants.put("deviceCountry", this.getCurrentCountry());
     constants.put("uniqueId", Secure.getString(this.reactContext.getContentResolver(), Secure.ANDROID_ID));
     constants.put("systemManufacturer", Build.MANUFACTURER);
     constants.put("bundleId", packageName);
-    constants.put("userAgent", System.getProperty("http.agent"));
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      constants.put("userAgent", WebSettings.getDefaultUserAgent(this.reactContext));
+    }
     constants.put("timezone", TimeZone.getDefault().getID());
     constants.put("isEmulator", this.isEmulator());
     constants.put("isTablet", this.isTablet());
+    if (getCurrentActivity().checkCallingOrSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED ||
+            getCurrentActivity().checkCallingOrSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED ||
+            getCurrentActivity().checkCallingOrSelfPermission("android.permission.READ_PHONE_NUMBERS") == PackageManager.PERMISSION_GRANTED) {
+        TelephonyManager telMgr = (TelephonyManager) this.reactContext.getSystemService(Context.TELEPHONY_SERVICE);
+        constants.put("phoneNumber", telMgr.getLine1Number());
+    }
     return constants;
   }
 }

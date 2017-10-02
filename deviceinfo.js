@@ -29,6 +29,9 @@ module.exports = {
   getSystemVersion: function () {
     return RNDeviceInfo.systemVersion;
   },
+  getAPILevel: function () {
+    return RNDeviceInfo.apiLevel;
+  },
   getBundleId: function() {
     return RNDeviceInfo.bundleId;
   },
@@ -65,4 +68,11 @@ module.exports = {
   isPinOrFingerprintSet: function () {
     return RNDeviceInfo.isPinOrFingerprintSet;
   },
+  getFirstInstallTime: function () {
+    return RNDeviceInfo.firstInstallTime;
+  },
+  getLastUpdateTime: function () {
+    return RNDeviceInfo.lastUpdateTime;
+  },
+  getPhoneNumber: _ => RNDeviceInfo.phoneNumber
 };
